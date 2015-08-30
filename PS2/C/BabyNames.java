@@ -57,21 +57,33 @@ class BabyTree{
   public BabyTree() { root = null; }
 
   // protected class methods 
-  protected Node find(Node node, String key) {
+  protected Node find(Node node, String key, HashSet<String> names) {
 
-    if (node == null){ 
+    /*if (node == null){ 
     //  System.out.println("node was null in find");
       return node;
-    }                               // not found
-    else if (node.value.babyName.equals(key)){
+    }*/                               // not found
+    if (node.value.babyName.equals(key)){
      // System.out.println("found" + key); 
+      names.add(node.value.babyName);
       return node;
     }                        // found
     else if (node.value.babyName.compareTo(key) < 0){ 
+      names.add(node.value.babyName);
      // System.out.println("search to the right");
-      return find(node.right, key);       // search to the right
+      if(node.right != null)
+        return find(node.right, key, names);       // search to the right
+      else
+        return node;
     }
-    else return find(node.left, key);  // search to the left
+    else{
+
+      names.add(node.value.babyName);
+      if(node.left != null)
+        return find(node.left, key, names);  // search to the left
+      else
+        return node;
+    }
 
   }
 
@@ -178,40 +190,44 @@ class BabyTree{
     //System.out.println("returning");
   }
 
-  protected Node insert(Node node, Baby babyToInsert, int heightCount) {
+  protected Node insert(Node node, Baby babyToInsert, int rankCount) {
+
 
     if (node == null){ 
-     // System.out.println("Inserting ...");
       return new Node(babyToInsert);          // insertion point is found
     }
 
     if (node.value.babyName.compareTo(babyToInsert.babyName) < 0){                  // search to the right
-      //System.out.println("Going right");
-      node.right = insert(node.right, babyToInsert, heightCount++);
+      node.right = insert(node.right, babyToInsert, rankCount + getSizeOfNode(node.right) + 1);
       node.right.parent = node;
       
-
     }
     else {                                          // search to the left
-     // System.out.println("Going left");
-      node.left = insert(node.left, babyToInsert, heightCount++);
+      node.left = insert(node.left, babyToInsert, rankCount + 1);
       node.left.parent = node;
-      
-      
     }
 
    // System.out.println("recurring trying to balance , " + node.value);
     
     //node = updateHeight(node, heightCount++);
     // Updating height
-    //System.out.println("updatin and stuff" + node.value);
     node.height = Math.max(getHeightOfNode(node.left), getHeightOfNode(node.right)) + 1;
     node.size = getSizeOfNode(node.left) + getSizeOfNode(node.right) + 1;
+    //node.rank = rankCount;
     node = balanceTree(node);
     
     return node;                                       // return the updated BST
   }
 
+  protected int getRankOfNode(Node node){
+
+    if(node == null)
+      return 0;
+
+    else
+      return node.rank;
+
+  }
 
   protected Node updateSize(Node node){
 
@@ -245,7 +261,7 @@ class BabyTree{
     if (node == null) return;
     inorder(node.left);                               // recursively go to the left
    // System.out.printf(" %s", node.value);                      // visit this BST node
-    System.out.println(node.value + "height :" + node.height + "size : " + node.size);
+    System.out.println(node.value + "height :" + node.height + "size : " + node.size + " rank: " + node.rank);
     inorder(node.right);                             // recursively go to the right
   }
 
@@ -295,7 +311,7 @@ class BabyTree{
   // Get size of tre binary tree
   protected int size(Node node) { 
 
-    if (node == null) {
+    if(node == null) {
       return 0;
     }
     else { 
@@ -303,12 +319,12 @@ class BabyTree{
     } 
   } 
 
-  public Baby find(String key) {
+  /*public Baby find(String key) {
 
     Node res = find(root, key);
     return res.value;
 
-  }
+  }*/
 
   public void insert(Baby babyToInsert) { 
 
@@ -335,94 +351,33 @@ class BabyTree{
     if(root == null)
       return 0;
 
-    Node leftBound = root, rightBound = root;
-    int cutOffBoundLeft = 0, cutOffBoundRight = 0;    
+    HashSet<String> names = new HashSet<String>(); 
+    
+    Node leftBound = find(root, start, names);
+    Node rightBound = find(root, end, names);
 
-    // Look for node that is smaller than start
-    if(leftBound.value.babyName.compareTo(start) >= 0){
-      while(leftBound.left != null && leftBound.left.value.babyName.compareTo(start) >= 0){
+    //System.out.println("------------------");
 
-        leftBound = leftBound.left;
+   // if(leftBound.value.babyName.compareTo(start) < 0)
+    //System.out.println("[ " + start + "," + end + " ]");
+   // System.out.println("leftbound is: " + leftBound.value.babyName);
+   // System.out.println("rightbound is:" + rightBound.value.babyName);
 
-      }
-
-    } else if(leftBound.right != null){
-
-      while(leftBound.right != null && leftBound.right.value.babyName.compareTo(start) >= 0){
-
-        leftBound = leftBound.right;
-
-      }
-
-    }
-
-    if(rightBound.value.babyName.compareTo(end) < 0){
-
-      // Look for node that is bigger than end
-      while(rightBound.right != null && rightBound.right.value.babyName.compareTo(end) < 0){
-
-        rightBound = rightBound.right;
-
-      } 
-
-    } else if(rightBound.left != null){
-
-      while(rightBound.left != null && rightBound.right.value.babyName.compareTo(end) < 0){
-
-        rightBound = rightBound.left;
-
-      }
-
-    }
-
-         System.out.println("leftbound stopped at" + leftBound.value.babyName);
-     System.out.println("rightBOund stopped at" + rightBound.value.babyName);
-
-     // Not in interval
-    if(leftBound.value.babyName.compareTo(start) < 0 )
+    //System.out.println("TERMINATING if " + leftBound.value.babyName + " < " + start + "?");
+    if(leftBound.value.babyName.compareTo(start) < 0){
+      //System.out.println("TERMINATING!");
       return 0;
+    } 
+    //System.out.println("TERMINATING if " + rightBound.value.babyName + " >= " + end + "?");
+    if(rightBound.value.babyName.compareTo(end) >= 0){
+      // Count away this one. does not belong to the interval
+      names.remove(rightBound.value.babyName);
+    } 
 
     if(leftBound.value.babyName.equals(rightBound.value.babyName))
       return 1;
-
-    if(leftBound.left != null)
-        cutOffBoundLeft = getSizeOfNode(leftBound.left);
-
-    if(rightBound.right != null)
-      cutOffBoundRight =  getSizeOfNode(rightBound.right);
-
-
-   
-
-    // If still nodes left, cut them off
-   /* if(leftBound.left != null)
-      cutOffBoundLeft += getSizeOfNode(leftBound.left);
-
-    if(rightBound.right != null)
-      cutOffBoundRight = getSizeOfNode(rightBound.right);*/
-
-    // CORNER CASE with only two nodes 
-    /*if(root.left == null){
-      if(leftBound.value.babyName.compareTo(start) < 0 && leftBound.right != null){
-       // System.out.println("start is not in interval");
-        leftBound = leftBound.right;
-      
-        if(leftBound.value.babyName.compareTo(start) < 0){
-         // System.out.println("not this time eitehr");
-          return 0;
-        } else {
-          return 1;
-        }
-
-      }
-
-    }*/
-
-    // System.out.println("root " + getSizeOfNode(root));
-    // System.out.println("cutleft " + cutOffBoundLeft);
-    // System.out.println("cutright " + cutOffBoundRight);
-
-    return getSizeOfNode(root) - cutOffBoundLeft - cutOffBoundRight;
+    
+    return names.size();
  
   }
  
@@ -473,7 +428,7 @@ class BabyNames {
 
     return;
 
-     /*System.out.println("root value" + femaleBabies.getRoot());
+    /* System.out.println("root value" + femaleBabies.getRoot());
   
 
      System.out.println("INORDER TRAVERSAL");
