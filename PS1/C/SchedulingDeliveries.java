@@ -11,76 +11,40 @@ class SchedulingDeliveries {
   // if needed, declare a private data structure here that
   // is accessible to all methods in this class
   //PriorityQueue<Woman> pq;
-  TreeMap<Integer, ArrayList<Woman>> tm;
-  HashMap<String, Integer> hm;
-  //TreeMap<Woman, Woman> tm;
-  int queueNumber = 1;
   final int NUM_WOMAN = 200000;
+  int queueNumberGlobal = 1;
+  TreeSet<Woman> ts;
+  HashMap<String, Woman> hm;
 
   class Woman{
 
     public String name;
+    public int dilation;
     public int queueNumber;
-
-    public Woman(String name, int queueNumber){
+  
+    public Woman(String name, int dilation){
 
       this.name = name;
-      this.queueNumber = queueNumber;
+      this.dilation = dilation;
+      this.queueNumber = queueNumberGlobal++;
 
     }
 
+    // For debug purposes
     public String toString(){
 
-      return "N: " + name + " Q: " + queueNumber;
+      return name + " : " + dilation + " : " + queueNumber;
 
     }
 
-  
-    public String getName(){
-
-        return name;
-    }
-
-  };
-
-
-  // class WomanComparator implements Comparator<Woman>{
- 
-  //   public int compare(Woman woman1, Woman woman2){
-
-  //       if(woman1.dilation < woman2.dilation)
-  //           return 1;
-
-  //       else if (woman1.dilation > woman2.dilation)
-  //           return -1;
-
-  //       else{ // equals
-
-  //         if(woman1.queueNumber > woman2.queueNumber)
-  //           return 1;
-
-  //         else if(woman1.queueNumber < woman2.queueNumber)
-  //           return -1;
-
-  //         else // totally equal, not gonna happen
-  //           return 0;
-
-  //       }
-
-  //   }
-     
-  // }
-
+  }
   public SchedulingDeliveries() {
     // Write necessary code during construction
     //
     // write your answer here
+    ts = new TreeSet<Woman>(new Comparator<Woman>(){
 
-    tm = new TreeMap<Integer, ArrayList<Woman>>();
-    hm = new HashMap<String, Integer>();
-   /* tm = new TreeMap<WomanKey, Woman>(new Comparator<WomanKey>(){
-
-        public int compare(Woman woman1, Woman woman2){
+      public int compare(Woman woman1, Woman woman2){
 
             if(woman1.dilation < woman2.dilation)
                 return 1;
@@ -103,66 +67,10 @@ class SchedulingDeliveries {
 
         }
 
-    });*/
+    });
 
-    //hm = new HashMap<String, Woman>();
-    /*pq = new PriorityQueue<Woman>(NUM_WOMAN, new Comparator<Woman>(){
-
-        /*public int compare(Woman woman1, Woman woman2){
-
-            if(hm.get(woman1.name) == null)
-              return 0;
-            else if(hm.get(woman2.name) == null)
-              return 0;
-
-            if(hm.get(woman1.name).dilation < hm.get(woman2.name).dilation)
-                return 1;
-
-            else if (hm.get(woman1.name).dilation > hm.get(woman2.name).dilation)
-                return -1;
-
-            else{ // equals
-
-              if(hm.get(woman1.name).queueNumber > hm.get(woman2.name).queueNumber)
-                return 1;
-
-              else if(hm.get(woman1.name).queueNumber < hm.get(woman2.name).queueNumber)
-                return -1;
-
-              else{ // totally equal, not gonna happen
-                return 0;
-              }
-
-            }
-
-        }
-
-        public int compare(Woman woman1, Woman woman2){
-
-            if(woman1.dilation < woman2.dilation)
-                return 1;
-
-            else if (woman1.dilation > woman2.dilation)
-                return -1;
-
-            else{ // equals
-
-              if(woman1.queueNumber > woman2.queueNumber)
-                return 1;
-
-              else if(woman1.queueNumber < woman2.queueNumber)
-                return -1;
-
-              else // totally equal, not gonna happen
-                return 0;
-
-            }
-
-        }
-
-    });*/
-
-
+    hm = new HashMap<String, Woman>();
+     
   }
 
   void ArriveAtHospital(String womanName, int dilation) {
@@ -170,178 +78,34 @@ class SchedulingDeliveries {
     // into your chosen data structure
     //
     // write your answer here
-    //Woman woman = new Woman(womanName, dilation, queueNumber);
-   // hm.put(womanName, woman);
-
-    // We know that this woman is unique..
-
-    hm.put(womanName, dilation);
-
-    if(!tm.containsKey(dilation)){
-      ArrayList<Woman> list = new ArrayList<Woman>();
-      list.add(new Woman(womanName, queueNumber));
-      tm.put(hm.get(womanName), list);
-    } else {
-      tm.get(dilation).add(new Woman(womanName, queueNumber));
-    }
-
-    System.out.println(tm);
-    queueNumber++;
-    //pq.add(woman);
-    //queueNumber++;
-    //tm.put(woman, woman); // Does not matter what type of key in this case since we defined a comparator in constructor
+    Woman newWoman = new Woman(womanName, dilation);
+    hm.put(womanName, newWoman);
+    ts.add(newWoman);
+   // System.out.println(ts);
 
   }
 
   void UpdateDilation(String womanName, int increaseDilation) {
 
-    
-    // Get the womans corresponding dilation
-    int dilation = hm.get(womanName);
-    int oldQueueNumber = 0;
+    Woman womanToUpdate = hm.get(womanName);
+    ts.remove(womanToUpdate);
 
-    // Many women can correspond to the same dilation, remove woman from the list
-    ArrayList<Woman> list = tm.get(dilation);
+    womanToUpdate.dilation += increaseDilation;
+    ts.add(womanToUpdate);
 
-    for(int i = 0; i < list.size(); i++){
-
-      if(list.get(i).name.equals(womanName)){
-        oldQueueNumber = list.get(i).queueNumber;
-        list.remove(i);
-        if(list.size() == 0){
-          tm.remove(dilation);
-        }
-      }
-
-    }
-// lol
-    System.out.println("removed" + tm);
-
-    // There is a list
-    if(tm.containsKey(dilation+increaseDilation)){
-
-      ArrayList<Woman> womanList = tm.get(dilation+increaseDilation);
-
-      if(womanList.get(0).queueNumber < oldQueueNumber){
-        womanList.add(new Woman(womanName, oldQueueNumber));
-        System.out.println("here");
-
-      } else{
-        womanList.add(0, new Woman(womanName, oldQueueNumber));
-        System.out.println("or here");
-      }
-
-    } else{
-
-      ArrayList<Woman> newList = new ArrayList<Woman>();
-      newList.add(new Woman(womanName, oldQueueNumber));
-
-      tm.put(dilation+increaseDilation, list);
-
-    }
-
-    // Update in hashmap
-    hm.remove(womanName);
-    hm.put(womanName, dilation+increaseDilation);
-
-    System.out.println("added again" + tm);
-
-    // You have to update the dilation of womanName to
-    // dilation += increaseDilation
-    // and modify your chosen data structure (if needed)
-    //
-    // write your answer here
-
-   // Woman womanToModify = hm.get(womanName);
-    //womanToModify.dilation += increaseDilation;
-
-    //Object currentWoman = tm.get(womanName);
-    //System.out.println(currentWoman);
-   // currentWoman.dilation += increaseDilation;
-
-
-   /* Woman[] allWoman = pq.toArray(new Woman[10]);
-    int oldDilation, oldQueueNumber;
-
-    for(int i = 0; i < pq.size(); i++){
-
-      if(allWoman[i].name.equals(womanName)){
-
-        oldDilation = allWoman[i].dilation;
-        oldQueueNumber = allWoman[i].queueNumber;
-        pq.remove(allWoman[i]);
-        pq.add(new Woman(womanName, oldDilation + increaseDilation, oldQueueNumber));
-        return;
-
-      }
-
-    }*/
+    hm.put(womanName, womanToUpdate);
+    //System.out.println("Hashmap: " + hm);
 
   }
 
   void GiveBirth(String womanName) {
 
-    System.out.println("TM IS " + tm);
-
-    ArrayList<Woman> womanList = tm.get(hm.get(womanName));
-
-    for(int i = 0; i < womanList.size(); i++){
-
-      if(womanList.get(i).name.equals(womanName)){
-        womanList.remove(i);
-        if(womanList.size() == 0)
-          tm.remove(hm.get(womanName));
-      }
-
-    }
-
-    System.out.println("TM IS AFTER" + tm);
-
-    hm.remove(womanName);
-    
-    //hm.remove(womanName);
-    // This womanName gives birth 'instantly'
-    // remove her from your chosen data structure
-    //
-    // write your answer here
-
-
-   /*Woman[] allWoman = pq.toArray(new Woman[10]);
-
-    for(int i = 0; i < pq.size(); i++){
-
-      if(allWoman[i].name.equals(womanName)){
-
-        pq.remove(allWoman[i]);
-        return;
-
-      }
-
-    }*/
-
-
+    Woman womanToRemove = hm.remove(womanName);
+    ts.remove(womanToRemove);
 
   }
 
   String Query() {
-
-
-    /*if(pq.size() == 0)
-      return "The delivery suite is empty";
-
-    else{
-
-      return pq.peek().name;
-      
-    }*/
-    if(tm.size() == 0){
-      return "The delivery suite is empty";
-    } else{
-      return tm.get(tm.lastKey()).get(0).name;
-    }
-
-
-
 
     // You have to report the name of the woman that the doctor
     // has to give the most attention to. If there is no more woman to
@@ -349,28 +113,13 @@ class SchedulingDeliveries {
     //
     // write your answer here
 
-      
-
-   // Woman thewoman = tm.firstEntry().getValue();
-
-    //return thewoman.name;
-
-
-  }
-
- /* void dump(){
-
-    while(true){
-
-      Woman currentWoman = pq.poll();
-      if(currentWoman == null)
-        break;
-
-      System.out.println(currentWoman);
-
+    if(ts.size() == 0){
+      return "The delivery suite is empty";
+    } else{
+      return ts.first().name;
     }
 
-  }*/
+  }
 
   void run() throws Exception {
     // do not alter this method
