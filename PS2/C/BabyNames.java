@@ -11,14 +11,14 @@ class Node {
 
   public Baby value;
   public Node parent, left, right;
-  public int height, rank;
+  public int height, rank, size;
 
   public Node(Baby value){
 
     this.value = value;
     parent = left = right = null;
-    rank = 0;
-    height = 0;
+    rank = height = 0;
+    size = 1;
 
   }
 
@@ -75,47 +75,32 @@ class BabyTree{
 
   }
 
-  protected int calcHeight(Node node){
-
-    if(node == null) // No value inserted 
-      return -1;
-    if(node.left == null && node.right == null) // Leaf
-      return 0;
-    else if(node.left == null) // Right Child
-      return 1 + calcHeight(node.right);
-    else if(node.right == null)
-      return 1 + calcHeight(node.left); // Left child
-    else return 1 + Math.max(calcHeight(node.left), calcHeight(node.right));// Internal node 
-
-  }
-
   protected Node rotateLeft(Node node){
 
-   // System.out.println("Rotating left ...");
-
+//    System.out.println("rotating left");
     // Rotate Left
     Node temp = node.right;
     node.right = temp.left;
     temp.left = node;
 
-    //node.height = Math.max(getHeight(node.left), getHeight(node.right));
-    //temp.height = Math.max(getHeight(node.left), getHeight(node.right));
     node.height = Math.max(getHeightOfNode(node.left), getHeightOfNode(node.right)) + 1;
     temp.height = Math.max(getHeightOfNode(temp.left), getHeightOfNode(temp.right)) + 1;
+    
+    node.size = getSizeOfNode(node.left) + getSizeOfNode(node.right) + 1;
+    temp.size = getSizeOfNode(temp.left) + getSizeOfNode(temp.right) + 1;
 
-    //if(temp.right != null)
-      //node.height = temp.right.height;
+    //node.size = getSizeOfNode(node.left) + getSizeOfNode(node.right);
 
     return temp;
 
   }
 
-  protected int getHeightOfNode(Node n){
+  protected int getHeightOfNode(Node node){
 
-    if(n == null)
+    if(node == null)
       return -1;
 
-    return n.height;
+    return node.height;
 
   }
 
@@ -124,23 +109,16 @@ class BabyTree{
    // System.out.println("Rotating right ...");
     Node temp = node.left;
 
-    //temp.parent = node.parent;
-    //node.parent = temp;
     node.left = temp.right; // if any
     temp.right = node;
 
-    //node.height = Math.max(getHeight(node.left), getHeight(node.right));
-    //temp.height = Math.max(getHeight(node.left), getHeight(node.right));
     node.height = Math.max(getHeightOfNode(node.left), getHeightOfNode(node.right)) + 1;
     temp.height = Math.max(getHeightOfNode(temp.left), getHeightOfNode(temp.right)) + 1;
 
-    System.out.println("after rot right the node " + node.value + "has height" + node.height) ;
-    System.out.println("after rot right the node " + temp.value + "has height" + temp.height);
-    /*temp.height = node.height;
-    node.height = temp.left.height ;
-    temp.left.height = node.height ;*/
-   // if(temp.left != null)
-     // node.height = temp.left.height;
+    node.size = getSizeOfNode(node.left) + getSizeOfNode(node.right) + 1;
+    temp.size = getSizeOfNode(temp.left) + getSizeOfNode(temp.right) + 1;
+
+    //node.size = getSizeOfNode(node.left) + getSizeOfNode(node.right);
 
     return temp;
 
@@ -148,54 +126,15 @@ class BabyTree{
 
   protected Node balanceTree(Node node){
 
-    /*int heightNodeLeftLeft = -1, heightNodeLeftRight = -1, heightNodeRightRight = -1, heightNodeRightLeft = -1;
-
-    if(node.left != null){
-
-      if(node.left.left != null)
-        heightNodeLeftLeft = node.left.left.height;
-      if(node.left.right != null)
-        heightNodeLeftRight = node.left.right.height;
-
-    }
-
-    if(node.right != null){
-    
-      if(node.right.right != null)
-        heightNodeRightRight = node.right.right.height;
-      if(node.right.left != null)
-        heightNodeRightLeft = node.right.left.height;
-
-    }
-*/
-  /*  int heightRightTree, heightLeftTree;
-
-    if(node.right == null)
-      heightRightTree = -1;
-    else
-      heightRightTree = node.right.height;
-
-    if(node.left == null)
-      heightLeftTree = -1;
-    else
-      heightLeftTree =  node.left.height;*/
-
-    
-
     int heightRightTree = getHeightOfNode(node.right);
     int heightLeftTree = getHeightOfNode(node.left);
-
-    System.out.println("looking at node" + node.value);
-    System.out.println("height right tree" + heightRightTree);
-    System.out.println("height left tree" + heightLeftTree);
-
 
     int balanceOfNode = Math.abs(heightLeftTree - heightRightTree);
     
     // Needs rotation
     if(balanceOfNode > 1){
 
-     System.out.println("Balancing, currently at node " + node.value + "Balance is " + balanceOfNode);
+     //System.out.println("Balancing, currently at node " + node.value + "Balance is " + balanceOfNode);
 
       if(heightRightTree > heightLeftTree){
 
@@ -218,7 +157,7 @@ class BabyTree{
 
         if(getHeightOfNode(node.left.left) >= getHeightOfNode(node.left.right)){
 
-          System.out.println("Single right rotation");
+        //  System.out.println("Single right rotation");
           //System.out.println("why here");
           node = rotateRight(node);
 
@@ -250,6 +189,7 @@ class BabyTree{
       //System.out.println("Going right");
       node.right = insert(node.right, babyToInsert, heightCount++);
       node.right.parent = node;
+      
 
     }
     else {                                          // search to the left
@@ -257,27 +197,35 @@ class BabyTree{
       node.left = insert(node.left, babyToInsert, heightCount++);
       node.left.parent = node;
       
+      
     }
 
    // System.out.println("recurring trying to balance , " + node.value);
     
-    node = updateHeight(node, heightCount++);
+    //node = updateHeight(node, heightCount++);
+    // Updating height
+    //System.out.println("updatin and stuff" + node.value);
+    node.height = Math.max(getHeightOfNode(node.left), getHeightOfNode(node.right)) + 1;
+    node.size = getSizeOfNode(node.left) + getSizeOfNode(node.right) + 1;
     node = balanceTree(node);
     
     return node;                                       // return the updated BST
   }
 
-  // public methods to user 
-  
-  protected Node updateHeight(Node node, int v){
 
-   // System.out.println("updateing height of" + node.value + "to " + v);
-    //node.height += v;
-    //node.height += v;
-    node.height = getHeight(node);
+  protected Node updateSize(Node node){
+
+    node.size = size(node);
     return node;
-    //System.out.println("updated height of " + node.value + " to " + node.height);
-    //return node;
+
+  }
+
+  protected int getSizeOfNode(Node node){
+
+    if(node == null)
+      return 0;
+
+    return node.size;
 
   }
 
@@ -297,15 +245,17 @@ class BabyTree{
     if (node == null) return;
     inorder(node.left);                               // recursively go to the left
    // System.out.printf(" %s", node.value);                      // visit this BST node
-    System.out.println(node.value + "height :" + node.height);
+    System.out.println(node.value + "height :" + node.height + "size : " + node.size);
     inorder(node.right);                             // recursively go to the right
   }
 
   // will be used in AVL lecture
-  protected int getHeight(Node node) {
+ /* protected int getHeight(Node node) {
     if (node == null) return -1;
-    else return Math.max(getHeight(node.left), getHeight(node.right)) + 1;
-  }
+    else {
+      return Math.max(getHeightOfNode(node.left), getHeightOfNode(node.right)) + 1;
+    }
+  }*/
 
   protected Node successor(Node node) {
     if (node.right != null){      
@@ -342,40 +292,8 @@ class BabyTree{
     }
   }
 
-/*
-  protected Node delete(Node node, String key) {
-    if (node == null)  return node;              // cannot find the item to be deleted
-
-    if (node.value.babyName.equals(key)) {                          // this is the node to be deleted
-      if (node.left == null && node.right == null)                   // this is a leaf
-        node = null;                                      // simply erase this node
-      else if (node.left == null && node.right != null) {   // only one child at right
-        Node temp = node;
-        node.right.parent = node.parent;
-        node = node.right;                                                 // bypass T
-        temp = null;
-      }
-      else if (node.left != null && node.right == null) {    // only one child at left
-        Node temp = node;
-        node.left.parent = node.parent;
-        node = node.left;                                                  // bypass T
-        temp = null;
-      }
-      else {                                 // has two children, find successor
-        Baby successorV = successor(node.value.babyName);
-        node.value = successorV;         // replace this key with the successor's key
-        node.right = delete(node.right, successorV.babyName);      // delete the old successorV
-      }
-    }
-    else if (node.value.babyName.compareTo(key) > 0)                                   // search to the right
-      node.right = delete(node.right, key);
-    else                                                   // search to the left
-      node.left = delete(node.left, key);
-    return node;                                          // return the updated BST
-  }*/
-
   // Get size of tre binary tree
-  private int size(Node node) { 
+  protected int size(Node node) { 
 
     if (node == null) {
       return 0;
@@ -385,8 +303,6 @@ class BabyTree{
     } 
   } 
 
-
-
   public Baby find(String key) {
 
     Node res = find(root, key);
@@ -394,11 +310,11 @@ class BabyTree{
 
   }
 
-  //Test
-
   public void insert(Baby babyToInsert) { 
 
     root = insert(root, babyToInsert, 0); 
+    //root = updateSize(root);
+
   }
 
   //public void delete(String key) { root = delete(root, key); }
@@ -412,9 +328,103 @@ class BabyTree{
     System.out.println();
   }
 
-  public int getHeight() { return getHeight(root); }
+  //public int getHeight() { return getHeight(root); }
 
-  public int countSubMap(String start, String end){if (root == null) return 0; else return 5;}
+  public int countSubMap(String start, String end){
+
+    if(root == null)
+      return 0;
+
+    Node leftBound = root, rightBound = root;
+    int cutOffBoundLeft = 0, cutOffBoundRight = 0;    
+
+    // Look for node that is smaller than start
+    if(leftBound.value.babyName.compareTo(start) >= 0){
+      while(leftBound.left != null && leftBound.left.value.babyName.compareTo(start) >= 0){
+
+        leftBound = leftBound.left;
+
+      }
+
+    } else if(leftBound.right != null){
+
+      while(leftBound.right != null && leftBound.right.value.babyName.compareTo(start) >= 0){
+
+        leftBound = leftBound.right;
+
+      }
+
+    }
+
+    if(rightBound.value.babyName.compareTo(end) < 0){
+
+      // Look for node that is bigger than end
+      while(rightBound.right != null && rightBound.right.value.babyName.compareTo(end) < 0){
+
+        rightBound = rightBound.right;
+
+      } 
+
+    } else if(rightBound.left != null){
+
+      while(rightBound.left != null && rightBound.right.value.babyName.compareTo(end) < 0){
+
+        rightBound = rightBound.left;
+
+      }
+
+    }
+
+         System.out.println("leftbound stopped at" + leftBound.value.babyName);
+     System.out.println("rightBOund stopped at" + rightBound.value.babyName);
+
+     // Not in interval
+    if(leftBound.value.babyName.compareTo(start) < 0 )
+      return 0;
+
+    if(leftBound.value.babyName.equals(rightBound.value.babyName))
+      return 1;
+
+    if(leftBound.left != null)
+        cutOffBoundLeft = getSizeOfNode(leftBound.left);
+
+    if(rightBound.right != null)
+      cutOffBoundRight =  getSizeOfNode(rightBound.right);
+
+
+   
+
+    // If still nodes left, cut them off
+   /* if(leftBound.left != null)
+      cutOffBoundLeft += getSizeOfNode(leftBound.left);
+
+    if(rightBound.right != null)
+      cutOffBoundRight = getSizeOfNode(rightBound.right);*/
+
+    // CORNER CASE with only two nodes 
+    /*if(root.left == null){
+      if(leftBound.value.babyName.compareTo(start) < 0 && leftBound.right != null){
+       // System.out.println("start is not in interval");
+        leftBound = leftBound.right;
+      
+        if(leftBound.value.babyName.compareTo(start) < 0){
+         // System.out.println("not this time eitehr");
+          return 0;
+        } else {
+          return 1;
+        }
+
+      }
+
+    }*/
+
+    // System.out.println("root " + getSizeOfNode(root));
+    // System.out.println("cutleft " + cutOffBoundLeft);
+    // System.out.println("cutright " + cutOffBoundRight);
+
+    return getSizeOfNode(root) - cutOffBoundLeft - cutOffBoundRight;
+ 
+  }
  
   public Baby getRoot(){ return root.value; }
 
@@ -423,16 +433,12 @@ class BabyTree{
 class BabyNames {
   // if needed, declare a private data structure here that
   // is accessible to all methods in this class
-
-  //public BabyTree bt;
-  //public TreeMap<String, Baby> tm;
   public BabyTree maleBabies;
   public BabyTree femaleBabies;
 
   public BabyNames() {
     // Write necessary code during construction;
-    //
-    //bt = new BabyTree();
+  
     maleBabies = new BabyTree();
     femaleBabies = new BabyTree();
 
@@ -465,33 +471,19 @@ class BabyNames {
 
   void RemoveSuggestion(String babyName) {
 
-   // return;
+    return;
 
-     System.out.println("root value" + femaleBabies.getRoot());
+     /*System.out.println("root value" + femaleBabies.getRoot());
   
 
      System.out.println("INORDER TRAVERSAL");
      femaleBabies.inorder();
 
-     System.out.println("peek root : " + femaleBabies.getRoot());
-    
-   // System.out.println(femaleBabies.getRoot());
-    // You have to remove the babyName from your chosen data structure
-    //
-    // write your answer here
-    //bt.delete(babyName);
-    /*maleBabies.remove(babyName);
-    femaleBabies.remove(babyName);*/
+     System.out.println("peek root : " + femaleBabies.getRoot());*/
     
   }
 
   int Query(String START, String END, int genderPreference) {
-
-   // int ans = 0;
-
-    // You have to answer how many baby name starts
-    // with prefix that is inside query interval [START..END)
-    //
     // write your answer her
     if(genderPreference == 0)
       return maleBabies.countSubMap(START, END) + femaleBabies.countSubMap(START,END);
@@ -500,10 +492,6 @@ class BabyNames {
     else 
       return femaleBabies.countSubMap(START, END);
 
-
-   // ans++;
-
-   // return ans;
   }
 
   void run() throws Exception {

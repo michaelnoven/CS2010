@@ -111,3 +111,71 @@ BOYS:
     return size(root) - cutOffBoundLeft - cutOffBoundRight;
  
   }*/
+
+
+
+
+  /*
+  protected Node delete(Node node, String key) {
+    if (node == null)  return node;              // cannot find the item to be deleted
+
+    if (node.value.babyName.equals(key)) {                          // this is the node to be deleted
+      if (node.left == null && node.right == null)                   // this is a leaf
+        node = null;                                      // simply erase this node
+      else if (node.left == null && node.right != null) {   // only one child at right
+        Node temp = node;
+        node.right.parent = node.parent;
+        node = node.right;                                                 // bypass T
+        temp = null;
+      }
+      else if (node.left != null && node.right == null) {    // only one child at left
+        Node temp = node;
+        node.left.parent = node.parent;
+        node = node.left;                                                  // bypass T
+        temp = null;
+      }
+      else {                                 // has two children, find successor
+        Baby successorV = successor(node.value.babyName);
+        node.value = successorV;         // replace this key with the successor's key
+        node.right = delete(node.right, successorV.babyName);      // delete the old successorV
+      }
+    }
+    else if (node.value.babyName.compareTo(key) > 0)                                   // search to the right
+      node.right = delete(node.right, key);
+    else                                                   // search to the left
+      node.left = delete(node.left, key);
+    return node;                                          // return the updated BST
+  }*/
+
+
+  /*
+  protected Node delete(Node node, String key) {
+    if (node == null)  return node;              // cannot find the item to be deleted
+
+    if (node.value.babyName.equals(key)) {                          // this is the node to be deleted
+      if (node.left == null && node.right == null)                   // this is a leaf
+        node = null;                                      // simply erase this node
+      else if (node.left == null && node.right != null) {   // only one child at right
+        Node temp = node;
+        node.right.parent = node.parent;
+        node = node.right;                                                 // bypass T
+        temp = null;
+      }
+      else if (node.left != null && node.right == null) {    // only one child at left
+        Node temp = node;
+        node.left.parent = node.parent;
+        node = node.left;                                                  // bypass T
+        temp = null;
+      }
+      else {                                 // has two children, find successor
+        Baby successorV = successor(node.value.babyName);
+        node.value = successorV;         // replace this key with the successor's key
+        node.right = delete(node.right, successorV.babyName);      // delete the old successorV
+      }
+    }
+    else if (node.value.babyName.compareTo(key) > 0)                                   // search to the right
+      node.right = delete(node.right, key);
+    else                                                   // search to the left
+      node.left = delete(node.left, key);
+    return node;                                          // return the updated BST
+  }*/
