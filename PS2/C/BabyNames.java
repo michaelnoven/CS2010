@@ -56,37 +56,6 @@ class BabyTree{
   // constructor
   public BabyTree() { root = null; }
 
-  // protected class methods 
-  protected Node find(Node node, String key, HashSet<String> names) {
-
-    /*if (node == null){ 
-    //  System.out.println("node was null in find");
-      return node;
-    }*/                               // not found
-    if (node.value.babyName.equals(key)){
-     // System.out.println("found" + key); 
-      names.add(node.value.babyName);
-      return node;
-    }                        // found
-    else if (node.value.babyName.compareTo(key) < 0){ 
-      names.add(node.value.babyName);
-     // System.out.println("search to the right");
-      if(node.right != null)
-        return find(node.right, key, names);       // search to the right
-      else
-        return node;
-    }
-    else{
-
-      names.add(node.value.babyName);
-      if(node.left != null)
-        return find(node.left, key, names);  // search to the left
-      else
-        return node;
-    }
-
-  }
-
   protected Node rotateLeft(Node node){
 
 //    System.out.println("rotating left");
@@ -115,6 +84,21 @@ class BabyTree{
     return node.height;
 
   }
+
+  protected int findRank(Node node, String key) {
+  int rank = 0;
+  while (node != null) {
+    if (node.value.babyName.compareTo(key) > 0) // move to left subtree
+      node = node.left;
+    else if (node.value.babyName.compareTo(key) < 0){
+      rank += 1 + getSizeOfNode(node.left);
+      node = node.right;
+    }
+    else 
+      return rank + getSizeOfNode(node.left);
+  }
+  return -1; // not found
+}
 
   protected Node rotateRight(Node node){
 
@@ -346,38 +330,81 @@ class BabyTree{
 
   //public int getHeight() { return getHeight(root); }
 
+  // protected class methods 
+  protected Node find(Node node, String key, boolean lookingForLeftBound) {
+
+    /*if (node == null){ 
+    //  System.out.println("node was null in find");
+      return node;
+    }*/                               // not found
+    if (node.value.babyName.equals(key) ){
+     // System.out.println("found" + key); 
+      return node;
+    }                        // found
+    else if (node.value.babyName.compareTo(key) < 0){ 
+     // System.out.println(node.value.babyName + "is smaller than " + key + " going right ...");
+     // System.out.println("search to the right");
+      if(node.right != null )
+        return find(node.right, key, lookingForLeftBound);       // search to the right
+      else
+        return node;
+    }
+    else {
+      //System.out.println(node.value.babyName + "is bigger or equal than" + key + " going left ...");
+      if(node.left != null)
+        return find(node.left, key, lookingForLeftBound);  // search to the left
+      else
+        return node;
+    }
+
+  }
+
   public int countSubMap(String start, String end){
 
     if(root == null)
       return 0;
-
-    HashSet<String> names = new HashSet<String>(); 
     
-    Node leftBound = find(root, start, names);
-    Node rightBound = find(root, end, names);
+    Node leftBound = find(root, start, true);
+    Node rightBound = find(root, end, false);
 
-    //System.out.println("------------------");
+    int findRankRight, findRankLeft;
+    findRankLeft = findRank(root, leftBound.value.babyName);
+    findRankRight = findRank(root, rightBound.value.babyName);
 
-   // if(leftBound.value.babyName.compareTo(start) < 0)
-    //System.out.println("[ " + start + "," + end + " ]");
-   // System.out.println("leftbound is: " + leftBound.value.babyName);
-   // System.out.println("rightbound is:" + rightBound.value.babyName);
-
-    //System.out.println("TERMINATING if " + leftBound.value.babyName + " < " + start + "?");
-    if(leftBound.value.babyName.compareTo(start) < 0){
-      //System.out.println("TERMINATING!");
-      return 0;
-    } 
-    //System.out.println("TERMINATING if " + rightBound.value.babyName + " >= " + end + "?");
+    int toRemoveRight = getSizeOfNode(root) - findRankRight - 1;
+    int toRemoveLeft = findRankLeft;
+   
+   /* System.out.println("------------------");
+    System.out.println("[ " + start + "," + end + " ]");
+    System.out.println("leftbound is: " + leftBound.value.babyName);
+    System.out.println("rightbound is:" + rightBound.value.babyName);*/
+   
+    // Corner cases, when we have reached a limit, need to check the value we stand on
     if(rightBound.value.babyName.compareTo(end) >= 0){
       // Count away this one. does not belong to the interval
-      names.remove(rightBound.value.babyName);
+      toRemoveRight++;
     } 
+    // Remove this node if not in start interval
+    if(start.compareTo(leftBound.value.babyName) > 0){
+      toRemoveLeft++;
+    }
 
-    if(leftBound.value.babyName.equals(rightBound.value.babyName))
-      return 1;
-    
-    return names.size();
+    if(leftBound.value.babyName.equals(rightBound.value.babyName)){
+      if(end.compareTo(rightBound.value.babyName) <= 0 || start.compareTo(leftBound.value.babyName) > 0)
+        return 0;
+      else
+        return 1;
+
+    }
+/*
+    System.out.println("rankLeft" + findRankLeft);
+    System.out.println("rankRight" + findRankRight);
+    System.out.println("sizeOfRoot" + getSizeOfNode(root));
+
+    System.out.println("toRemoveRight" + toRemoveRight);
+    System.out.println("toRemoveLeft" + toRemoveLeft);*/
+
+    return getSizeOfNode(root) - toRemoveLeft - toRemoveRight;
  
   }
  
