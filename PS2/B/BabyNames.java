@@ -259,9 +259,7 @@ class BabyNames {
     // You have to answer how many baby name starts
     // with prefix that is inside query interval [START..END)
     //
-    // write your answer her
-    SortedMap<String, Baby> filteredBabies;
-      
+    // write your answer here
     if(genderPreference == 0)
       return maleBabies.subMap(START, END).size() + femaleBabies.subMap(START,END).size();
     else if(genderPreference == 1)
