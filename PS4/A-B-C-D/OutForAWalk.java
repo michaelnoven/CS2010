@@ -232,7 +232,7 @@ class OutForAWalk {
 
   public static void main(String[] args) throws Exception {
     // do not alter this method
-
+    
     OutForAWalk ps4 = new OutForAWalk();
     ps4.run();
   
